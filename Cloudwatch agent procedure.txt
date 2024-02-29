@@ -1,0 +1,52 @@
+Cloudwatch agent procedure:
+
+1. Create an IAM role
+	(1) AmazonEC2RoleforSSM
+	(2) CloudWatchAgentServerPolicy
+	(3) CloudWatchFullAccess - (Optional)
+
+2. Create ec2 instance with SG
+	(1) 22
+	(2) 443
+	(3) 80 - (Optional)
+
+3. update instance:
+	command: sudo yum update -y
+
+
+4. install CW agent on EC2:
+	command: sudo yum install amazon-cloudwatch-agent -y
+
+5. Go into the path and launch the agent using the below command:
+	command: sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-config-wizard
+
+
+6. Configuration:
+
+	1. (1)	Linux
+	2. (1)	Ec2
+	3. (2)	Root user
+	4. (1)	enabling StatsD daemon
+	5. (8125) defaulth port for StatsD daemon
+	6. (1)	10s collect interval for StatsD daemon default
+	7. (4)	60s aggregation interval for metrics collected by StatsD daemon
+	8. (1)	monitor metrics from CollectD? WARNING: CollectD must be installed or the Agent will fail to start
+	9. (1)	want to monitor any host metrics? e.g. CPU, memory, etc.
+	10.(1)	want to monitor cpu metrics per core?
+	11.(1)	want to add ec2 dimensions (ImageId, InstanceId, InstanceType, AutoScalingGroupName) into all of your metrics if the info 		is available?
+	12.(1)	want to aggregate ec2 dimensions (InstanceId)?
+	13.(4)	60s. Would you like to collect your metrics at high resolution (sub-minute resolution)?
+	14.(1)	Which default metrics config do you want? [1. Basic]
+	15.(1) 	Are you satisfied with the above config? Note: it can be manually customized after the wizard completes to add additional 		items.
+	16.(2)	Do you have any existing CloudWatch Log Agent configuration file to import for migration?
+	17.(1)	Do you want to monitor any log files?
+	18.(/var/log/cloud-init.log) enter the log file path
+	19.(1)	Log group class: (1) STANDARD or (2) INFREQUENT_ACCESS
+	20.(2)	Log Group Retention in days [2. 1]
+	21.(2)	Do you want to specify any additional log files to monitor? [2. No]
+	22.(2)	Do you want the CloudWatch agent to also retrieve X-ray traces? [2. no] default 1
+	23.(2) 	Do you want to store the config in the SSM parameter store? [2. no] default 1
+
+
+7. now run the CW agent using this command:
+	sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json
